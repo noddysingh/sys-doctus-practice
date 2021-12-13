@@ -1,0 +1,18 @@
+{
+  "sampleData": {
+    "d14ca982-f262-4586-b837-ab28f8581513": {
+      "payload": "sample_data/list_json.json"
+    },
+    "e8f1cafe-b76b-4d46-b8b8-2bba1c4892fa": {
+      "vars-payloadfromquery": "sample_data/list_moviedetails__c.dwl",
+      "vars-payloadfrompost": "sample_data/java.dwl"
+    },
+    "7c756b3a-4477-44f7-8d26-07da2246b667": {
+      "payload": "sample_data/list_moviedetails__c_1.dwl"
+    },
+    "195b486f-86e0-434d-86b5-31cba60d1fe6": {
+      "vars-sf_var": "sample_data/defaultnumbertype.json",
+      "vars-customerseat": "sample_data/defaultnumbertype.dwl"
+    }
+  }
+}

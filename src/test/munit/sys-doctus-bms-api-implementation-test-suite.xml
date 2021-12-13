@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="sys-doctus-bms-api-implementation-test-suite.xml" />
+	<munit:test name="sys-doctus-bms-api-implementation-test-suite-sys-doctus-bms-api-get-implementationFlowTest" doc:id="26a4e593-87c0-4bac-9b7f-8b0407497294" description="Test">
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to sys-doctus-bms-api-get-implementationFlow" doc:id="bfb43948-3ee5-4223-87a0-5cd6086ae22f" name="sys-doctus-bms-api-get-implementationFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="8bab2382-3da1-4ad9-93de-c6ad6be57484" message="payload should not be null" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sys-doctus-bms-api-implementation-test-suite-sys-doctus-bms-api-post-implementationFlowTest" doc:id="54257696-fc03-479d-9ff4-204b9b0fa95c" description="Test">
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to sys-doctus-bms-api-post-implementationFlow" doc:id="04afcd5a-5bb6-447a-90d8-dc07709e6313" name="sys-doctus-bms-api-post-implementationFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="6e8ee490-ddc0-4500-8859-b9ffe6a58c0d" message="payload should not be null" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

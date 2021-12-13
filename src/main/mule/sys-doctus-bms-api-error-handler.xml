@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<error-handler name="sys-doctus-bms-api-error-handlerError_Handler" doc:id="d7fe2f48-bcc2-44b7-a48a-dab0d0c6717c" >
+	 <on-error-propagate type="APIKIT:BAD_REQUEST, APIKIT:METHOD_NOT_ALLOWED, APIKIT:NOT_ACCEPTABLE, APIKIT:NOT_FOUND, APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:name="setHttpStatus" doc:id="52023525-3797-4ac1-8da7-f339764deed1">
+                    <ee:message>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[%dw 2.0
+output application/json
+var code = error.errorType.namespace ++ ":" ++ error.errorType.identifier
+---
+(Mule::p(code) default Mule::p('MULE:UNKNOWN')) as Number]]></ee:set-variable>
+                    
+</ee:variables>
+                </ee:transform>
+			<ee:transform doc:name="setErrorPayload" doc:id="aee686de-f234-41c4-a7a6-63f0e1599651" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json skipNullOn="everywhere"
+var code = vars.errorDetails.code default vars.httpStatus
+---
+{
+	"message": Mule::p(code),
+	"error": {
+		"correlationId": vars.correlationId,
+		"transactionId": vars.transactionId,
+		("processType": vars.processType) if vars.processType != null,
+		("businessProcessId": vars.movieid) if vars.movieid != null,
+		"code": vars.errorDetails.code default vars.httpStatus,
+		"type": vars.errorDetails.'type' default (error.errorType.namespace ++ ":" ++ error.errorType.identifier),
+		// Do not send backend error details message if API is exposed directly to Client
+		"message": if (error.errorType.namespace == "APIKIT") error.description else vars.errorDetails.payloadText,
+		"service": Mule::p('application.name')
+	}
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<logger level="INFO" doc:name="Logger" doc:id="d9ebc1dc-ef3b-42a5-aac6-45e27fdf2d50" message="#[payload]"/>
+            
+</on-error-propagate>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="5d925f74-3fec-44c1-846c-cb527b0762f3">
+			<ee:transform doc:name="setHttpStatusAndNotificationType" doc:id="31426696-982b-495e-8ce5-73f054db3088" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/json
+var code = error.errorType.namespace ++ ":" ++ error.errorType.identifier
+---
+(Mule::p(code) default Mule::p('MULE:UNKNOWN')) as Number]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<ee:transform doc:name="setErrorDetails" doc:id="d4a37f39-db39-48d7-bc8a-f9ee3f73b0f9" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable resource="dwl/set-errorDetails.dwl" variableName="errorDetails" />
+				</ee:variables>
+			</ee:transform>
+			<ee:transform doc:name="setErrorPayload" doc:id="27c7461f-d9eb-43be-90e6-cabe9e8bedde" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json skipNullOn="everywhere"
+var code = vars.errorDetails.code default vars.httpStatus
+---
+{
+	"message": Mule::p(code),
+	"error": {
+		"correlationId": vars.correlationId,
+		"transactionId": vars.transactionId,
+		("processType": vars.processType) if vars.processType != null,
+		("businessProcessId": vars.movieid) if vars.movieid != null,
+		"code": vars.errorDetails.code default vars.httpStatus,
+		"type": vars.errorDetails.'type' default (error.errorType.namespace ++ ":" ++ error.errorType.identifier),
+		// Do not send backend error details message if API is exposed directly to Client
+		"message": if (error.errorType.namespace == "APIKIT") error.description else vars.errorDetails.payloadText,
+		"service": Mule::p('application.name')
+	}
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<logger level="INFO" doc:name="Logger" doc:id="e3eb0602-76f3-41d3-a818-72c3435d192b" message="#[payload]"/>
+		</on-error-continue>
+            
+</error-handler>
+</mule>

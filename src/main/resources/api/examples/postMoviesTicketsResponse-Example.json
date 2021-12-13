@@ -1,0 +1,12 @@
+{
+   "venue": "Mumbai",
+   "movieId": "ABC123",
+   "language": "English",
+   "price": "350",
+   "approvedSeats": "15",
+   "genre": "Action",
+   "showTiming": "2021-12-12T07:00:00.000Z",
+   "dimension": "2D",
+   "movieName": "Venom",
+   "description": "Successfully booked the seats."
+}

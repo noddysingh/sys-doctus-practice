@@ -1,0 +1,76 @@
+#%RAML 1.0
+title: sys-doctus-bms-api
+version: v1
+description: This Rest API is used to manipulate movie details from the salesforce.
+
+traits:
+  clientCredentials: !include exchange_modules/82892c8e-767c-42ed-8bd8-62333ec30b95/clientid/1.0.0/clientid.raml
+  sourceId: !include exchange_modules/82892c8e-767c-42ed-8bd8-62333ec30b95/sourceid/1.0.0/sourceid.raml
+  correlationId: !include exchange_modules/82892c8e-767c-42ed-8bd8-62333ec30b95/correlationid/1.0.0/correlationid.raml
+  transactionId: !include exchange_modules/82892c8e-767c-42ed-8bd8-62333ec30b95/transactionid/1.0.0/transactionid.raml
+  standardResponse: !include exchange_modules/82892c8e-767c-42ed-8bd8-62333ec30b95/standardresponse/1.0.0/standardresponse.raml
+  standardRequestResponse: !include exchange_modules/82892c8e-767c-42ed-8bd8-62333ec30b95/standardrequestresponse/1.0.0/standardrequestresponse.raml
+
+types:
+  errorPayload: !include exchange_modules/82892c8e-767c-42ed-8bd8-62333ec30b95/errorpayload/1.0.1/errorPayload.raml
+  getMoviesTciket: !include datatypes/getMoviesTicketsResponse.raml
+  orderRequest: !include /datatypes/postMoviesTicketsRequest.raml
+  orderResponse: !include datatypes/postMoviesTicketsResponse.raml
+  
+
+/movieTickets:
+  displayName: Movie Tickets
+  description: This resource is used to get movie ticket details
+  get:
+    displayName: Get movie tickets
+    description: This method is used to get movie ticket details
+    queryParameters:
+      movieId:
+        type: string
+        required: false
+        example: "ABC123"
+      movieName:
+        type: string
+        required: false
+        example: "venom"
+      dimension:
+        description: 2d,3d,imax 3d
+        type: string
+        required: false
+        enum: [2d,3d,imax 3d]
+      language:
+        description: Please select language
+        required: false
+        enum: [Hindi, English, Marathi, Telegu]
+    is: [
+      clientCredentials,
+      correlationId,
+      sourceId,
+      transactionId,
+      standardResponse: {
+        statusCode: 200,
+        outputType: ,
+        outputExample: !include examples/getMoviesTicketsResponse-Examples.json,
+      }
+    ]
+  
+  post:
+    displayName: Post Movie Tickets
+    description: This method is used to post/update movie tickets details
+    is: [
+      sourceId,
+      correlationId,
+      transactionId,
+      clientCredentials,
+      standardRequestResponse: {
+        statusCode: 201,
+        inputType: orderRequest,
+        inputExample: !include examples/postMovieTicketsRequest-Example.json,
+        outputType: orderResponse,
+        outputExample: !include examples/postMoviesTicketsResponse-Example.json,
+      }
+    ]
+    
+      
+
+
