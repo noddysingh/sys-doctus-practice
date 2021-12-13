@@ -1,0 +1,88 @@
+#%RAML 1.0 Trait
+description: Default errorPayload API fragment is published in exchange.
+responses:
+  <<statusCode>>:
+    body:
+      application/json:
+        type: <<outputType>>
+        example: <<outputExample>>
+  400:
+    description:
+      The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing).
+    body:
+      application/json:
+        type: errorPayload
+        example: |
+          { "message": "Bad Request", "error": {"correlationId": "7bec72e0-5950-11e9-aeb7-c85b76795606", "code": 400, "type": "APIKIT:BAD_REQUEST", "message": "Required header sourceId not specified", "service": "skeleton-api"}}
+  401:
+    description:
+      The supplied credentials are invalid.
+    body:
+      application/json:
+        type: errorPayload
+        example: |
+          { "message": "Unauthorized", "error": {"correlationId": "7bec72e0-5950-11e9-aeb7-c85b76795606", "code": 401, "type": "HTTP:UNAUTHORIZED", "message": "The supplied credentials are invalid.", "service": "skeleton-api"}}
+  404:
+    description:
+      The server cannot find the requested resource.
+    body:
+      application/json:
+        type: errorPayload
+        example: |
+          { "message": "Not Found", "error": {"correlationId": "7bec72e0-5950-11e9-aeb7-c85b76795606", "code": 404, "type": "APIKIT:NOT_FOUND", "message": "The server cannot find the requested resource", "service": "skeleton-api"}}
+  405:
+    description:
+      A request was made of a resource using a request method not supported by that resource; for example, using GET on a form which requires data to be presented via POST, or using PUT on a read-only resource.
+    body:
+      application/json: 
+        type: errorPayload
+        example: |
+          { "message": "Method Not Allowed", "error": {"correlationId": "7bec72e0-5950-11e9-aeb7-c85b76795606", "code": 405, "type": "APIKIT:METHOD_NOT_ALLOWED", "message": "Method Not Allowed", "service": "skeleton-api"}}
+  406:
+    description:
+      The target resource does not have a current representation that would be acceptable to the user agent.
+    body:
+      application/json:
+        type: errorPayload
+        example: |
+          { "message": "Not acceptable", "error": {"correlationId": "7bec72e0-5950-11e9-aeb7-c85b76795606", "code": 406, "type": "APIKIT:NOT_ACCEPTABLE", "message": "The target resource does not have a current representation that would be acceptable to the user agent", "service": "skeleton-api"}}
+  415:
+    description:
+      The accept header specified an unsupported media type.
+    body:
+      application/json: 
+        type: errorPayload
+        example: |
+          { "message": "Unsupported media type", "error": {"correlationId": "7bec72e0-5950-11e9-aeb7-c85b76795606", "code": 415, "type": "APIKIT:UNSUPPORTED_MEDIA_TYPE", "message": "The accept header specified an unsupported media type.", "service": "skeleton-api"}}
+  500:
+    description:
+      An internal processing error occurred while processing the API request.
+    body:
+      application/json:
+        type: errorPayload
+        example: |
+          { "message": "Internal Server Error", "error": {"correlationId": "7bec72e0-5950-11e9-aeb7-c85b76795606", "code": 500, "type": "HTTP:INTERNAL_SERVER_ERROR", "message": "An internal processing error occurred while processing the API request.", "service": "skeleton-api"}}
+  501:
+    description:
+      The server either does not recognize the request method, or it lacks the ability to fulfil the request.
+    body:
+      application/json:
+        type: errorPayload
+        example: |
+          { "message": "Not Implemented", "error": {"correlationId": "7bec72e0-5950-11e9-aeb7-c85b76795606", "code": 501, "type": "APIKIT:NOT_IMPLEMENTED", "message": "The server either does not recognize the request method, or it lacks the ability to fulfil the request.", "service": "skeleton-api"}}
+  503:
+    description:
+      The request was not completed. The server is temporarily overloading or down.
+    body:
+      application/json:
+        type: errorPayload
+        example: |
+          { "message": "Service Unavailable", "error": {"correlationId": "7bec72e0-5950-11e9-aeb7-c85b76795606", "code": 503, "type": "HTTP:SERVICE_UNAVAILABLE", "message": "The request was not completed. The server is temporarily overloading or down.", "service": "skeleton-api"}}
+  504:
+    description:
+      The gateway has timed out.
+    body:
+      application/json:
+        type: errorPayload
+        example: |
+          { "message": "Gateway Timeout", "error": {"correlationId": "7bec72e0-5950-11e9-aeb7-c85b76795606", "code": 504, "type": "HTTP:TIMEOUT", "message": "The gateway has timed out.", "service": "skeleton-api"}}

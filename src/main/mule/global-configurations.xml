@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<http:listener-config name="sys-doctus-bms-api-httpListenerConfig" doc:name="HTTP Listener config" doc:id="36da333d-2ddc-46a2-9f13-9aecede0a93d" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="7d2e9fd6-fe47-4233-8b90-c4966ac92122" >
+		<salesforce:basic-connection username="${secure::salesforce.username}" password="${secure::salesforce.password}" securityToken="${secure::salesforce.token}" />
+	</salesforce:sfdc-config>
+	<configuration doc:name="Configuration" doc:id="ade56866-2851-4faf-a389-e8f02280c7e1" defaultErrorHandler-ref="sys-doctus-bms-api-error-handlerError_Handler" />
+	<configuration-properties doc:name="Configuration properties" doc:id="e72916d0-753d-4357-84b8-00b11f7d5108" file="properties_file/app_error.yaml" />
+	<http:listener-config name="HTTP_Listener_config_with_one_way_handshake" doc:name="HTTP Listener config" doc:id="5b989a88-b363-4ec0-b670-0a1cd5af11eb" >
+		<http:listener-connection protocol="HTTPS" host="0.0.0.0" port="${secure::https.port}" >
+			<tls:context >
+				<tls:key-store type="jks" path="server-keystore-f.jks" keyPassword="mulesoft" password="mulesoft" alias="mule-server"/>
+			</tls:context>
+		</http:listener-connection>
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="78faeaec-0810-4b2c-997a-e116bb634a08" file="config.yaml" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="78d64dcc-8042-4a47-a1fe-ac13b1cb6d21" file="config.yaml" key="mulesoft" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+</mule>

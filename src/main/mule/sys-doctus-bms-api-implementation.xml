@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="sys-doctus-bms-api-get-implementationFlow" doc:id="26a047d2-7780-40dc-bb89-b3acba04d80a" >
+		<ee:transform doc:name="Transform Message" doc:id="09c62db4-1ef7-4755-8b80-e8944d11a768">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="queryParams"><![CDATA[%dw 2.0
+output application/json
+---
+attributes.queryParams default {}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<salesforce:query doc:name="Query" doc:id="b2884757-8954-4628-9cd6-54d30dae8475" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query><![CDATA[select Id,Name,movieid__c,availableSeats__c,dimension__c,genre__c,language__c,price__c,showTiming__c,venue__c from moviedetails__c]]></salesforce:salesforce-query>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="eef3a158-747c-4144-9d0d-d768958ded33">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="82c765e6-ab54-4834-8fa4-597349a1cdc5" message="#[payload]" />
+		<ee:transform doc:name="Transform Message" doc:id="d14ca982-f262-4586-b837-ab28f8581513">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var movieId = if(!isEmpty(vars.queryParams.movieid)) vars.queryParams.movieid else ""
+var movieName = if(!isEmpty(vars.queryParams.movieName)) vars.queryParams.movieName else ""
+var dimension = if(!isEmpty(vars.queryParams.dimension)) vars.queryParams.dimension else ""
+var language = if(!isEmpty(vars.queryParams.language)) vars.queryParams.language else ""
+---
+ payload filter (($.movieid__c == movieId) or ($.Name == movieName) or ($.dimension__c == dimension) or ($.language__c == language))]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<flow name="sys-doctus-bms-api-post-implementationFlow" doc:id="4164d390-4fee-425d-9687-6ef60762bbcb" >
+		<logger level="INFO" doc:name="Logger" doc:id="fd488e26-8eb0-4bfd-8396-72a54f8c6f2f" message="#[payload]"/>
+		<set-variable value="#[payload.requestSeats as Number]" doc:name="Set Variable" doc:id="abe54b05-f656-4ad4-9b65-f7214d65a8ec" variableName="myvar" />
+		<salesforce:query doc:name="Query" doc:id="7db4005a-ddd5-45a5-a58b-7fe45f06fe9e" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[select Id,Name,movieid__c,availableSeats__c,dimension__c,genre__c,language__c,price__c,showTiming__c,venue__c from moviedetails__c where movieid__c= ':movieid']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	movieid : payload.movieId
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="9f7a8436-2377-4b05-9dbc-36bea84bb1e1" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="sf_var" ><![CDATA[%dw 2.0
+output application/json
+---
+payload[0].availableSeats__c as Number]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="383509d4-eec8-42e7-a07d-0cf4a6fa5aaf" >
+			<when expression="#[vars.sf_var - vars.myvar &gt; 0]">
+				<salesforce:update doc:name="Update" doc:id="7c733e17-2a48-4d2e-ada8-b79d3082e54b" config-ref="Salesforce_Config" type="moviedetails__c">
+			<salesforce:records><![CDATA[#[[using (pay= payload[0] default {}){Id: pay.Id,
+	Name: pay.Name,
+	venue__c: pay.venue__c,
+	movieid__c: pay.movieid__c,
+	language__c: pay.language__c,
+	price__c: pay.price__c,
+	availableSeats__c: pay.availableSeats__c - (vars.myvar default ""),
+	genre__c: pay.genre__c,
+	dimension__c: pay.dimension__c}]]]]></salesforce:records>
+		</salesforce:update>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="c2b91375-cb46-4337-9702-5d03d756698d" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Requested number of seats are not available. Available seats are : " ++ vars.sf_var
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="Transform Message" doc:id="f56cc037-cb36-414a-a510-43542c02ff61" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<remove-variable doc:name="Remove Variable" doc:id="e489d7ba-ea1a-4eb8-ab3b-74a4bc5c672f" variableName="myvar"/>
+	</flow>
+</mule>

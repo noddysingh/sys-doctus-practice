@@ -1,0 +1,44 @@
+#%RAML 1.0 DataType
+type: object
+properties:
+  message:
+    type: string
+    example:
+      "Bad Request"
+  error:
+    type: object
+    properties:
+      correlationId: 
+        type: string
+        example:
+          "7bec72e0-5950-11e9-aeb7-c85b76795606"
+        required: true
+      transactionId:
+        type: string
+        example:
+          "7bec72e0-5950-11e9-aeb7-c85b76795606"
+        required: false
+      processType:
+        type: string
+        example:
+          "Get order details"
+        required: false
+      code:
+        type: number
+        example:
+          400
+        required: true
+      'type':
+        type: string
+        example:
+          "APIKIT:BAD_REQUEST"
+      message:
+        type: string
+        example:
+          "Required header sourceId not specified"
+        required: true
+      service:
+        type: string
+        example:
+          skeleton-api
+        required: true

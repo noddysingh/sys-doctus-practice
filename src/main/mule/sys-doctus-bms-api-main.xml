@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+    <apikit:config name="sys-doctus-bms-api-config" api="sys-doctus-bms-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+	<http:listener-config name="HTTP_Listener_config_tp" doc:name="HTTP Listener config" doc:id="582b5ae4-5ffd-478b-9581-395e05b881ea" >
+		<http:listener-connection host="0.0.0.0" port="8083" />
+	</http:listener-config>
+	<flow name="sys-doctus-bms-api-main">
+        <http:listener path="/api/*" config-ref="HTTP_Listener_config_with_one_way_handshake">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+		<ee:transform doc:name="set sourceId and CorrelationId" doc:id="62a51f18-56de-41c4-8f77-9e886d87e4ba" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="correlationId" ><![CDATA[%dw 2.0
+output application/java
+---
+attributes.headers.correlationId default correlationId]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<set-variable value="#[attributes.headers.transactionId default vars.correlationId]" doc:name="setTransactionId" doc:id="10261399-08b7-4aee-9ac7-3c2df8b33810" variableName="transactionId" />
+		<apikit:router config-ref="sys-doctus-bms-api-config" />
+    </flow>
+    <flow name="get:\movieTickets:sys-doctus-bms-api-config">
+		<flow-ref doc:name="Flow Reference" doc:id="925279ab-de95-4cdf-9be9-e51d9841a768" name="sys-doctus-bms-api-get-implementationFlow"/>
+    </flow>
+    <flow name="post:\movieTickets:application\json:sys-doctus-bms-api-config">
+		<flow-ref doc:name="Flow Reference" doc:id="02c96851-6429-4d4b-8fbe-1282e39e04e5" name="sys-doctus-bms-api-post-implementationFlow"/>
+    </flow>
+	<flow name="sys-doctus-bms-api-mainFlow" doc:id="04e95fb9-e483-493d-ab09-6cda4f8fff7a" >
+		<http:listener doc:name="Listener" doc:id="a280f6a0-6b08-462f-aaf0-c6f43531862e" config-ref="HTTP_Listener_config_tp" path="/tpp"/>
+		<set-variable value="#[payload.requestSeats as Number]" doc:name="Set Variable" doc:id="79dd9f7a-3a29-4ec6-afc2-36aff2a87426" variableName="customerseat"/>
+		<logger level="INFO" doc:name="Logger" doc:id="9c2acc62-e8cb-46db-b4d8-cf2183152191" message="#[vars.customerseat as Number]"/>
+		<salesforce:query doc:name="Query" doc:id="ac3e3181-372f-4d1b-9985-17a4880bb44b" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[select Id,Name,movieid__c,availableSeats__c,dimension__c,genre__c,language__c,price__c,showTiming__c,venue__c from moviedetails__c where movieid__c= ':movieid']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	movieid : payload.movieId
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="c2e0256f-63b5-4719-82ac-3a1782baa095" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="sf_var" ><![CDATA[%dw 2.0
+output application/json
+---
+payload[0].availableSeats__c as Number]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="d59e6174-0eea-4dc0-8ee5-f3b362f6b0d4" >
+			<when expression="#[vars.sf_var - vars.customerseat &gt; 0]">
+				<ee:transform doc:name="Transform Message" doc:id="db5f994e-6e05-45bb-a720-f9398fc01bbd" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"msg" : "hi der"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="f0cf36cf-6bc3-485e-b837-d0fb855e9af7" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"msg" : "sorry"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="Transform Message" doc:id="d2d81978-bd48-42f9-86bc-e514105363c7">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+	</flow>
+</mule>
